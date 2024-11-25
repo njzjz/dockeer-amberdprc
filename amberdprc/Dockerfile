@@ -1,16 +1,14 @@
 FROM almalinux:8
 
-ARG CUDA_VERSION=12-4
+ARG CUDA_VERSION=126
 ARG XTB_VERSION=6.7.0
-ARG DEEPMD_VERSION=2.2.10
+ARG DEEPMD_VERSION=3.0.0
 ARG AMBER_VERSION=24_rc5
 
-# install CUDA
-RUN dnf -y install 'dnf-command(config-manager)' \
-    && dnf config-manager --add-repo http://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo \
-    && dnf -y install cuda-libraries-${CUDA_VERSION} cuda-nvtx-${CUDA_VERSION} libcublas-${CUDA_VERSION} cuda-compat-${CUDA_VERSION} cuda-cudart-${CUDA_VERSION} libcudnn8
-
+ENV DEEPMDHOME="/deepmd-kit"
 ENV AMBERHOME="/amber"
+
+COPY --from=ghcr.io/deepmodeling/deepmd-kit:${DEEPMD_VERSION}_cuda${CUDA_VERSION} /opt/deepmd-kit ${DEEPMDHOME}
 
 RUN dnf --enablerepo=powertools -y install tcsh make \
         gcc gcc-gfortran gcc-c++ \
@@ -32,11 +30,6 @@ RUN wget https://codeload.github.com/grimme-lab/xtb/zip/v${XTB_VERSION} -O xtb.z
     && cd ../.. \
     && rm -rf xtb.zip xtb-${XTB_VERSION}
 
-# download deepmd-kit
-RUN wget https://github.com/deepmodeling/deepmd-kit/releases/download/v${DEEPMD_VERSION}/libdeepmd_c.tar.gz -O libdeepmd_c.tar.gz \
-    && tar -xzf libdeepmd_c.tar.gz -C ${AMBERHOME} --strip-components=1 \
-    && rm libdeepmd_c.tar.gz
-
 # compile AMBER
 RUN wget https://ambermd.org/downloads/AmberTools${AMBER_VERSION}.tar.bz2 -O AmberTools.tar.bz2 \
     && tar -xjf AmberTools.tar.bz2 \
@@ -44,7 +37,7 @@ RUN wget https://ambermd.org/downloads/AmberTools${AMBER_VERSION}.tar.bz2 -O Amb
     && cd amber${AMBER_VERSION:0:2}_src/build \
     && cmake .. \
              -DCMAKE_INSTALL_PREFIX=${AMBERHOME} \
-             -DCMAKE_PREFIX_PATH="/usr/lib64/openmpi;${AMBERHOME}" \
+             -DCMAKE_PREFIX_PATH="/usr/lib64/openmpi;${AMBERHOME};${DEEPMD_VERSION}" \
              -DCOMPILER=GNU \
              -DMPI=ON \
              -DCUDA=OFF \
