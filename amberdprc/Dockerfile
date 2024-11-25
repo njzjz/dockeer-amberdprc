@@ -1,14 +1,16 @@
-FROM almalinux:8
-
 ARG CUDA_VERSION=126
 ARG XTB_VERSION=6.7.0
 ARG DEEPMD_VERSION=3.0.0
 ARG AMBER_VERSION=24_rc5
 
+FROM ghcr.io/deepmodeling/deepmd-kit:${DEEPMD_VERSION}_cuda${CUDA_VERSION} as deepmd-kit
+
+FROM almalinux:8
+
 ENV DEEPMDHOME="/deepmd-kit"
 ENV AMBERHOME="/amber"
 
-COPY --from=ghcr.io/deepmodeling/deepmd-kit:${DEEPMD_VERSION}_cuda${CUDA_VERSION} /opt/deepmd-kit ${DEEPMDHOME}
+COPY --from=deepmd-kit /opt/deepmd-kit ${DEEPMDHOME}
 
 RUN dnf --enablerepo=powertools -y install tcsh make \
         gcc gcc-gfortran gcc-c++ \
