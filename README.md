@@ -6,7 +6,7 @@ Docker for [AmberDPRc](https://gitlab.com/RutgersLBSR/AmberDPRc).
 
 - [AmberTools](https://ambermd.org/) 24 rc5
 - [DeePMD-kit](https://github.com/deepmodeling/deepmd-kit) (C++) v3.0.1 (TensorFlow backend)
-- [xtb](https://github.com/grimme-lab/xtb) v6.7.1
+- [xtb](https://github.com/grimme-lab/xtb) v6.7.0
 - [CUDA Toolkit](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/) 12.6 (You can still use DeePMD-kit without a GPU)
 
 ## Usage
